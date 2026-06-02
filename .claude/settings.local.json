@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo *)",
+      "Bash(rm -rf /var/folders/85/m95dv1cj0kg7k350yf29mhqc0000gp/T/metro-file-map-expo-0e6ea4444c3544e3355d203e2aafa248-40961eac2581de3e93f4cf77b0712314 \\\\ *)"
+    ]
+  }
+}
