@@ -1,4 +1,3 @@
-import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -8,7 +7,6 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -16,13 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BASE_URL } from '@/constants/api';
 
-type ObitItem = {
+type NotificationItem = {
   id: string;
   heading: string;
   place: string;
   story: string;
-  story_image: string | null;
-  category_name: string;
+  news_image: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -39,20 +36,18 @@ const formatDate = (dateStr: string) => {
   return `${mm}-${dd}-${yyyy} ${String(hour12).padStart(2, '0')}:${min} ${ampm}`;
 };
 
-function CardPlaceholder() {
-  return (
-    <View style={styles.placeholder}>
-      <Feather name="image" size={32} color="#aaaaaa" />
-    </View>
-  );
-}
-
-function ObitCard({ item, onPress }: { item: ObitItem; onPress: (item: ObitItem) => void }) {
+function NotificationCard({
+  item,
+  onPress,
+}: {
+  item: NotificationItem;
+  onPress: (item: NotificationItem) => void;
+}) {
   return (
     <TouchableOpacity style={styles.card} onPress={() => onPress(item)} activeOpacity={0.7}>
-      {!!item.story_image && (
+      {!!item.news_image && (
         <View style={styles.cardImageWrap}>
-          <Image source={{ uri: item.story_image }} style={styles.cardImage} resizeMode="cover" />
+          <Image source={{ uri: item.news_image }} style={styles.cardImage} resizeMode="cover" />
         </View>
       )}
       <View style={styles.cardBody}>
@@ -65,10 +60,9 @@ function ObitCard({ item, onPress }: { item: ObitItem; onPress: (item: ObitItem)
   );
 }
 
-export default function ObituariesScreen() {
+export default function NotificationsScreen() {
   const router = useRouter();
-  const [search, setSearch] = useState('');
-  const [data, setData] = useState<ObitItem[]>([]);
+  const [data, setData] = useState<NotificationItem[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -79,15 +73,18 @@ export default function ObituariesScreen() {
       if (loading && !reset) return;
       setLoading(true);
       try {
-        const res = await fetch(`${BASE_URL}/obituaries?page=${pageNum}&limit=10`);
+        const res = await fetch(`${BASE_URL}/notification?page=${pageNum}&limit=10`, {
+          headers: { 'Cache-Control': 'no-cache' },
+        });
         const json = await res.json();
         if (json.success) {
-          setData((prev) => (reset ? json.data : [...prev, ...json.data]));
+          const items: NotificationItem[] = json.data;
+          setData((prev) => (reset ? items : [...prev, ...items]));
           setHasMore(json.pagination?.hasNextPage ?? false);
           setPage(pageNum);
         }
       } catch (e) {
-        console.error('Obituaries fetch error:', e);
+        console.error('Notification fetch error:', e);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -110,42 +107,32 @@ export default function ObituariesScreen() {
     if (!loading && hasMore) fetchData(page + 1, false);
   };
 
-  const filtered = search.trim()
-    ? data.filter((i) => i.heading?.toLowerCase().includes(search.toLowerCase()))
-    : data;
-
-  const handlePress = (item: ObitItem) => {
+  const handlePress = (item: NotificationItem) => {
     router.push({
-      pathname: '/obituaries/[id]',
+      pathname: '/notifications/[id]',
       params: { id: item.id, data: JSON.stringify(item) },
     });
   };
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
-      {/* Search */}
-      <View style={styles.searchWrap}>
-        <Feather name="search" size={16} color="#999999" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by keyword"
-          placeholderTextColor="#999999"
-          value={search}
-          onChangeText={setSearch}
-        />
-      </View>
-
-      {/* List */}
       <FlatList
-        data={filtered}
+        data={data}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ObitCard item={item} onPress={handlePress} />}
+        renderItem={({ item }) => <NotificationCard item={item} onPress={handlePress} />}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.4}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#555555" />
+        }
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyWrap}>
+              <Text style={styles.emptyText}>No notifications found.</Text>
+            </View>
+          ) : null
         }
         ListFooterComponent={
           loading ? (
@@ -164,29 +151,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f2f2f2',
   },
-  searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    margin: 12,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    gap: 8,
-  },
-  searchIcon: {
-    marginRight: 2,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#333333',
-    padding: 0,
-  },
   listContent: {
     paddingHorizontal: 12,
+    paddingTop: 12,
     paddingBottom: 24,
   },
   card: {
@@ -204,12 +171,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  placeholder: {
-    flex: 1,
-    backgroundColor: '#c4c4c4',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   cardBody: {
     flex: 1,
     padding: 10,
@@ -217,10 +178,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#111111',
-    lineHeight: 20,
+    lineHeight: 19,
   },
   cardDate: {
     fontSize: 12,
@@ -229,5 +190,13 @@ const styles = StyleSheet.create({
   loaderRow: {
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  emptyWrap: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#888888',
   },
 });

@@ -1,72 +1,70 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dimensions,
+  Image,
+  ImageSourcePropType,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BASE_URL } from '../constants/api';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const SLIDES = [
-  { id: '1', bg: '#f0f8ff' },
-  { id: '2', bg: '#f0fff4' },
-  { id: '3', bg: '#fffaf0' },
-  { id: '4', bg: '#fdf0ff' },
-  { id: '5', bg: '#fff0f0' },
-];
+type Banner = {
+  id: string;
+  title: string;
+  image: string;
+};
 
 type GridItem = {
   id: string;
   label: string;
-  icon: React.ComponentProps<typeof Feather>['name'];
-  route: string | 'share' | null;
+  image: ImageSourcePropType;
+  route: string | null;
 };
 
 const GRID: GridItem[] = [
-  { id: 'about', label: 'About Us', icon: 'briefcase', route: '/about' },
-  { id: 'home', label: 'Home', icon: 'home', route: null },
-  { id: 'share', label: 'Tell a Friend', icon: 'share-2', route: 'share' },
-  { id: 'directory', label: 'Directory', icon: 'folder', route: null },
-  { id: 'obituaries', label: 'Obituaries', icon: 'book-open', route: '/obituaries' },
-  { id: 'breaking', label: 'Breaking N...', icon: 'bell', route: '/news' },
-  { id: 'contact', label: 'Contact Us', icon: 'user', route: '/contact' },
-  { id: 'news', label: 'News', icon: 'file-text', route: '/news' },
-  { id: 'edition', label: 'JCT E Edition', icon: 'globe', route: '/digital-edition' },
+  { id: 'about', label: 'About Us', image: require('../../assets/images/about_us.png'), route: '/about' },
+  { id: 'directory', label: 'Directory', image: require('../../assets/images/directory.png'), route: null },
+  { id: 'obituaries', label: 'Obituaries', image: require('../../assets/images/obitauries.png'), route: '/obituaries' },
+  { id: 'contact', label: 'Contact Us', image: require('../../assets/images/contact_us.png'), route: '/contact' },
+  { id: 'news', label: 'News', image: require('../../assets/images/news.png'), route: '/news' },
+  { id: 'edition', label: 'JCT E Edition', image: require('../../assets/images/JCT_Icon.png'), route: '/digital-edition' },
 ];
 
 export default function HomeScreen() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const cardWidth = SCREEN_WIDTH - 32;
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/banners/active`, { headers: { 'Cache-Control': 'no-cache' } })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) setBanners(json.data);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleScroll = (event: any) => {
     const idx = Math.round(event.nativeEvent.contentOffset.x / cardWidth);
-    setCurrentSlide(Math.max(0, Math.min(idx, SLIDES.length - 1)));
+    setCurrentSlide(Math.max(0, Math.min(idx, banners.length - 1)));
   };
 
-  const handlePress = async (item: GridItem) => {
-    if (item.route === 'share') {
-      try {
-        await Share.share({
-          message:
-            'Check out the Jackson County Times app! Get local news, obituaries, events and more.\nhttps://jacksoncountytimes.net/',
-        });
-      } catch {}
-      return;
-    }
+  const handlePress = (item: GridItem) => {
     if (item.route) {
       router.push(item.route as any);
     }
   };
 
-  const rows = [GRID.slice(0, 3), GRID.slice(3, 6), GRID.slice(6, 9)];
+  const rows = [GRID.slice(0, 3), GRID.slice(3, 6)];
   const itemSize = Math.floor((SCREEN_WIDTH - 32 - 16) / 3);
 
   return (
@@ -75,6 +73,13 @@ export default function HomeScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}>
+        {/* Logo */}
+        <Image
+          source={require('../../assets/images/jct_logo.png')}
+          style={[styles.logoImage, { width: cardWidth }]}
+          resizeMode="contain"
+        />
+
         {/* Ad Banner Slider */}
         <View style={styles.sliderCard}>
           <ScrollView
@@ -85,18 +90,29 @@ export default function HomeScreen() {
             onScroll={handleScroll}
             scrollEventThrottle={16}
             style={{ width: cardWidth }}>
-            {SLIDES.map((slide, index) => (
-              <View key={slide.id} style={[styles.slide, { width: cardWidth, backgroundColor: slide.bg }]}>
+            {banners.length > 0 ? (
+              banners.map((banner) => (
+                <View key={banner.id} style={[styles.slide, { width: cardWidth }]}>
+                  <Image
+                    source={{ uri: `${BASE_URL}/images${banner.image}` }}
+                    style={styles.slideImage}
+                    resizeMode="cover"
+                  />
+                </View>
+              ))
+            ) : (
+              <View style={[styles.slide, { width: cardWidth, backgroundColor: '#f0f0f0' }]}>
                 <Feather name="image" size={48} color="#cccccc" />
-                <Text style={styles.slideLabel}>Advertisement {index + 1}</Text>
               </View>
-            ))}
+            )}
           </ScrollView>
-          <View style={styles.dotsRow}>
-            {SLIDES.map((_, i) => (
-              <View key={i} style={[styles.dot, i === currentSlide && styles.dotActive]} />
-            ))}
-          </View>
+          {banners.length > 1 && (
+            <View style={styles.dotsRow}>
+              {banners.map((_, i) => (
+                <View key={i} style={[styles.dot, i === currentSlide && styles.dotActive]} />
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Navigation Grid */}
@@ -109,7 +125,7 @@ export default function HomeScreen() {
                   style={[styles.gridItem, { width: itemSize, height: itemSize }]}
                   onPress={() => handlePress(item)}
                   activeOpacity={0.7}>
-                  <Feather name={item.icon} size={34} color="#333333" />
+                  <Image source={item.image} style={styles.gridIcon} resizeMode="contain" />
                   <Text style={styles.gridLabel} numberOfLines={2}>
                     {item.label}
                   </Text>
@@ -120,10 +136,10 @@ export default function HomeScreen() {
         </View>
 
         {/* Footer Logo */}
-        <View style={styles.footer}>
+        {/* <View style={styles.footer}>
           <Text style={styles.footerSmall}>Jackson County</Text>
           <Text style={styles.footerLarge}>TIMES</Text>
-        </View>
+        </View> */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -132,13 +148,19 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f1f1f1',
   },
   scroll: {
     flex: 1,
   },
   content: {
     paddingBottom: 24,
+  },
+  logoImage: {
+    height: 140,
+    alignSelf: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
   },
   sliderCard: {
     margin: 16,
@@ -157,11 +179,10 @@ const styles = StyleSheet.create({
     height: 180,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
-  slideLabel: {
-    fontSize: 14,
-    color: '#aaaaaa',
+  slideImage: {
+    width: '100%',
+    height: 180,
   },
   dotsRow: {
     flexDirection: 'row',
@@ -189,14 +210,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   gridItem: {
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
-    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 12,
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 8,
     gap: 6,
+  },
+  gridIcon: {
+    width: 40,
+    height: 40,
   },
   gridLabel: {
     fontSize: 11,

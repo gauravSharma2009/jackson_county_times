@@ -6,6 +6,7 @@ import {
   FlatList,
   Image,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,7 +15,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const BASE_URL = 'http://54.144.41.237:6200/api';
+import { BASE_URL } from '@/constants/api';
+
+type Category = {
+  id: number;
+  category_name: string;
+};
 
 type NewsItem = {
   id: string;
@@ -26,14 +32,6 @@ type NewsItem = {
   created_at: string;
   updated_at: string;
 };
-
-type Tab = { key: string; label: string; endpoint: string };
-
-const TABS: Tab[] = [
-  { key: 'breaking', label: 'BREAKING N...', endpoint: 'breaking-news' },
-  { key: 'first', label: 'FIRST APPE...', endpoint: 'first-appearance' },
-  { key: 'jail', label: 'JAIL DOCKE...', endpoint: 'breaking-news' },
-];
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -58,15 +56,13 @@ function CardPlaceholder() {
 function NewsCard({ item, onPress }: { item: NewsItem; onPress: (item: NewsItem) => void }) {
   return (
     <TouchableOpacity style={styles.card} onPress={() => onPress(item)} activeOpacity={0.7}>
-      <View style={styles.cardImageWrap}>
-        {item.news_image ? (
+      {!!item.news_image && (
+        <View style={styles.cardImageWrap}>
           <Image source={{ uri: item.news_image }} style={styles.cardImage} resizeMode="cover" />
-        ) : (
-          <CardPlaceholder />
-        )}
-      </View>
+        </View>
+      )}
       <View style={styles.cardBody}>
-        <Text style={styles.cardTitle} numberOfLines={3}>
+        <Text style={styles.cardTitle} numberOfLines={2}>
           {item.heading}
         </Text>
         <Text style={styles.cardDate}>{formatDate(item.created_at)}</Text>
@@ -77,6 +73,10 @@ function NewsCard({ item, onPress }: { item: NewsItem; onPress: (item: NewsItem)
 
 export default function NewsScreen() {
   const router = useRouter();
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [catLoading, setCatLoading] = useState(true);
+
   const [activeTab, setActiveTab] = useState(0);
   const [search, setSearch] = useState('');
   const [data, setData] = useState<NewsItem[]>([]);
@@ -85,20 +85,34 @@ export default function NewsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const currentTab = TABS[activeTab];
+  // Fetch categories once on mount
+  useEffect(() => {
+    fetch(`${BASE_URL}/categories`, { headers: { 'Cache-Control': 'no-cache' } })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data.length > 0) setCategories(json.data);
+      })
+      .catch(() => {})
+      .finally(() => setCatLoading(false));
+  }, []);
 
-  const fetchData = useCallback(
+  const activeCategory = categories[activeTab];
+
+  const fetchNews = useCallback(
     async (pageNum: number, reset: boolean) => {
+      if (!activeCategory) return;
       if (loading && !reset) return;
       setLoading(true);
       try {
-        const res = await fetch(`${BASE_URL}/${currentTab.endpoint}?page=${pageNum}&limit=10`);
+
+        console.log("url :", `${BASE_URL}/news?category_id=${activeCategory.id}&page=${pageNum}&limit=10`)
+        const res = await fetch(
+          `${BASE_URL}/breaking-news?category_id=${activeCategory.id}&page=${pageNum}&limit=10`,
+          { headers: { 'Cache-Control': 'no-cache' } }
+        );
         const json = await res.json();
         if (json.success) {
-          let items: NewsItem[] = json.data;
-          if (currentTab.key === 'jail') {
-            items = items.filter((i) => i.category_name?.toUpperCase().includes('JAIL'));
-          }
+          const items: NewsItem[] = json.data;
           setData((prev) => (reset ? items : [...prev, ...items]));
           setHasMore(json.pagination?.hasNextPage ?? false);
           setPage(pageNum);
@@ -110,24 +124,26 @@ export default function NewsScreen() {
         setRefreshing(false);
       }
     },
-    [currentTab, loading]
+    [activeCategory, loading]
   );
 
+  // Re-fetch when active tab changes (after categories are loaded)
   useEffect(() => {
+    if (!activeCategory) return;
     setData([]);
     setPage(1);
     setHasMore(true);
-    fetchData(1, true);
+    fetchNews(1, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [activeTab, activeCategory?.id]);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchData(1, true);
+    fetchNews(1, true);
   };
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) fetchData(page + 1, false);
+    if (!loading && hasMore) fetchNews(page + 1, false);
   };
 
   const filtered = search.trim()
@@ -138,21 +154,33 @@ export default function NewsScreen() {
     router.push({ pathname: '/news/[id]', params: { id: item.id, data: JSON.stringify(item) } });
   };
 
+  if (catLoading) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['bottom']}>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#111111" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
-      {/* Tabs */}
+      {/* Tabs from API */}
       <View style={styles.tabBar}>
-        {TABS.map((tab, i) => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.tab, i === activeTab && styles.tabActive]}
-            onPress={() => setActiveTab(i)}
-            activeOpacity={0.8}>
-            <Text style={[styles.tabText, i === activeTab && styles.tabTextActive]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
+          {categories.map((cat, i) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[styles.tab, i === activeTab && styles.tabActive]}
+              onPress={() => { setActiveTab(i); setSearch(''); }}
+              activeOpacity={0.8}>
+              <Text style={[styles.tabText, i === activeTab && styles.tabTextActive]}>
+                {cat.category_name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {/* Search */}
@@ -179,6 +207,13 @@ export default function NewsScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#555555" />
         }
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyWrap}>
+              <Text style={styles.emptyText}>No articles found.</Text>
+            </View>
+          ) : null
+        }
         ListFooterComponent={
           loading ? (
             <View style={styles.loaderRow}>
@@ -196,15 +231,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f2f2f2',
   },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   tabBar: {
-    flexDirection: 'row',
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
+  tabScroll: {
+    flexDirection: 'row',
+  },
   tab: {
-    flex: 1,
     paddingVertical: 13,
+    paddingHorizontal: 16,
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
@@ -287,5 +329,13 @@ const styles = StyleSheet.create({
   loaderRow: {
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  emptyWrap: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#888888',
   },
 });

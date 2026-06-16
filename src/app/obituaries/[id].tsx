@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import {
   Image,
   ScrollView,
@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { FontSizeModal } from '@/components/font-size-modal';
+import { useArticleDisplay } from '@/hooks/use-article-display';
 
 const stripHtml = (html: string): string => {
   if (!html) return '';
@@ -40,8 +42,17 @@ const formatDate = (dateStr: string) => {
 };
 
 export default function ObitDetailScreen() {
-  const router = useRouter();
   const params = useLocalSearchParams<{ data: string }>();
+  const {
+    darkMode,
+    toggleDarkMode,
+    fontSize,
+    setFontSize,
+    fontScale,
+    fontSizeModalVisible,
+    openFontSizeModal,
+    closeFontSizeModal,
+  } = useArticleDisplay();
 
   let item: any = null;
   try {
@@ -69,54 +80,67 @@ export default function ObitDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom']}>
+    <SafeAreaView style={[styles.safe, darkMode && styles.safeDark]} edges={['bottom']}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}>
         {/* Meta */}
         <View style={styles.meta}>
-          <Text style={styles.heading}>{item.heading}</Text>
-          <Text style={styles.metaDate}>{formatDate(item.created_at)}</Text>
-          <Text style={styles.metaPlace}>{item.place || 'Jackson County, Florida'}</Text>
+          <Text
+            style={[
+              styles.heading,
+              darkMode && styles.textDark,
+              { fontSize: 20 * fontScale, lineHeight: 28 * fontScale },
+            ]}>
+            {item.heading}
+          </Text>
+          <Text style={[styles.metaDate, darkMode && styles.metaDark, { fontSize: 13 * fontScale }]}>
+            {formatDate(item.created_at)}
+          </Text>
+          <Text style={[styles.metaPlace, darkMode && styles.metaDark, { fontSize: 13 * fontScale }]}>
+            {item.place || 'Jackson County, Florida'}
+          </Text>
         </View>
 
         {/* Image */}
-        <View style={styles.imageCard}>
-          {item.story_image ? (
+        {!!item.story_image && (
+          <View style={[styles.imageCard, darkMode && styles.imageCardDark]}>
             <Image source={{ uri: item.story_image }} style={styles.image} resizeMode="cover" />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Feather name="image" size={48} color="#cccccc" />
-            </View>
-          )}
-        </View>
+          </View>
+        )}
 
         {/* Body */}
-        <Text style={styles.body}>{storyText}</Text>
+        <Text
+          style={[
+            styles.body,
+            darkMode && styles.textDark,
+            { fontSize: 15 * fontScale, lineHeight: 26 * fontScale },
+          ]}>
+          {storyText}
+        </Text>
       </ScrollView>
 
       {/* Bottom Action Bar */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.actionBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={20} color="#ffffff" />
+        <TouchableOpacity style={styles.actionBtn} onPress={toggleDarkMode}>
+          <Feather name={darkMode ? 'moon' : 'sun'} size={20} color="#ffffff" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn}>
-          <Feather name="sun" size={20} color="#ffffff" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn}>
+        <TouchableOpacity style={styles.actionBtn} onPress={openFontSizeModal}>
           <Feather name="type" size={20} color="#ffffff" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn}>
-          <Feather name="message-circle" size={20} color="#ffffff" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtn} onPress={handleShare}>
           <Feather name="share" size={20} color="#ffffff" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn}>
-          <Feather name="bookmark" size={20} color="#ffffff" />
-        </TouchableOpacity>
       </View>
+
+      <FontSizeModal
+        visible={fontSizeModalVisible}
+        value={fontSize}
+        darkMode={darkMode}
+        onSelect={setFontSize}
+        onClose={closeFontSizeModal}
+      />
     </SafeAreaView>
   );
 }
@@ -125,6 +149,9 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  safeDark: {
+    backgroundColor: '#1a1a1a',
   },
   scroll: {
     flex: 1,
@@ -153,6 +180,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#555555',
   },
+  textDark: {
+    color: '#f0f0f0',
+  },
+  metaDark: {
+    color: '#aaaaaa',
+  },
   imageCard: {
     marginHorizontal: 16,
     borderRadius: 10,
@@ -161,16 +194,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
+  imageCardDark: {
+    borderColor: '#333333',
+  },
   image: {
     width: '100%',
     height: 200,
-  },
-  imagePlaceholder: {
-    width: '100%',
-    height: 200,
-    backgroundColor: '#e8e8e8',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   body: {
     fontSize: 15,

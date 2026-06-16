@@ -1,43 +1,64 @@
 import { Feather } from '@expo/vector-icons';
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BASE_URL } from '../constants/api';
 
-type ContactItem = {
-  id: string;
-  icon: React.ComponentProps<typeof Feather>['name'];
-  label: string;
-  value: string;
-  action: () => void;
+type ContactData = {
+  intro: string;
+  org_name: string;
+  phone: string;
+  address: string;
+  website: string;
+  banner_image: string | null;
+  banner_image_url: string | null;
 };
 
-const CONTACTS: ContactItem[] = [
-  {
-    id: 'phone',
-    icon: 'phone',
-    label: 'Call',
-    value: '+18505261501',
-    action: () => Linking.openURL('tel:+18505261501'),
-  },
-  {
-    id: 'address',
-    icon: 'map-pin',
-    label: 'Address',
-    value: '2866 Madison Street, Marianna, Florida 32448',
-    action: () =>
-      Linking.openURL(
-        'https://maps.google.com/?q=2866+Madison+Street,+Marianna,+Florida+32448'
-      ),
-  },
-  {
-    id: 'website',
-    icon: 'globe',
-    label: 'Website',
-    value: 'https://jacksoncountytimes.net/',
-    action: () => Linking.openURL('https://jacksoncountytimes.net/'),
-  },
-];
-
 export default function ContactScreen() {
+  const [data, setData] = useState<ContactData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/contact-us`, { headers: { 'Cache-Control': 'no-cache' } })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          // console.log('Contact data loaded:', json.data);
+          setData(json.data);}
+        else setError(true);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const contacts = data
+    ? [
+        {
+          id: 'phone',
+          icon: 'phone' as const,
+          label: 'Call',
+          value: data.phone,
+          action: () => Linking.openURL(`tel:${data.phone}`),
+        },
+        {
+          id: 'address',
+          icon: 'map-pin' as const,
+          label: 'Address',
+          value: data.address,
+          action: () =>
+            Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(data.address)}`),
+        },
+        {
+          id: 'website',
+          icon: 'globe' as const,
+          label: 'Website',
+          value: data.website,
+          action: () => Linking.openURL(data.website),
+        },
+      ]
+    : [];
+
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <ScrollView
@@ -46,35 +67,50 @@ export default function ContactScreen() {
         showsVerticalScrollIndicator={false}>
         {/* Banner */}
         <View style={styles.banner}>
-          <View style={styles.bannerOverlay}>
-            <Text style={styles.bannerSmall}>Jackson County</Text>
-            <Text style={styles.bannerLarge}>TIMES</Text>
-            <Text style={styles.bannerTag}>contact</Text>
+          {(data?.banner_image) ? (
+            <Image
+              source={{ uri: `${BASE_URL}/images/${data.banner_image}` }}
+              style={styles.bannerImage}
+              resizeMode="cover"
+            />
+          ) : null}
+        </View>
+
+        {loading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color="#111111" />
           </View>
-        </View>
+        ) : error ? (
+          <View style={styles.centered}>
+            <Text style={styles.errorText}>Failed to load contact information.</Text>
+          </View>
+        ) : (
+          <>
+            {/* Headline */}
+            <Text style={styles.headline}>{data?.intro}</Text>
 
-        {/* Headline */}
-        <Text style={styles.headline}>
-          Get in touch with <Text style={styles.headlineBold}>Jackson County Times</Text>
-        </Text>
-
-        {/* Contact box */}
-        <View style={styles.contactBox}>
-          {CONTACTS.map((item, index) => (
-            <View key={item.id}>
-              <TouchableOpacity style={styles.contactRow} onPress={item.action} activeOpacity={0.7}>
-                <View style={styles.iconBox}>
-                  <Feather name={item.icon} size={20} color="#333333" />
+            {/* Contact box */}
+            <View style={styles.contactBox}>
+              {contacts.map((item, index) => (
+                <View key={item.id}>
+                  <TouchableOpacity
+                    style={styles.contactRow}
+                    onPress={item.action}
+                    activeOpacity={0.7}>
+                    <View style={styles.iconBox}>
+                      <Feather name={item.icon} size={20} color="#333333" />
+                    </View>
+                    <View style={styles.textBox}>
+                      <Text style={styles.contactLabel}>{item.label}</Text>
+                      <Text style={styles.contactValue}>{item.value}</Text>
+                    </View>
+                  </TouchableOpacity>
+                  {index < contacts.length - 1 && <View style={styles.rowDivider} />}
                 </View>
-                <View style={styles.textBox}>
-                  <Text style={styles.contactLabel}>{item.label}</Text>
-                  <Text style={styles.contactValue}>{item.value}</Text>
-                </View>
-              </TouchableOpacity>
-              {index < CONTACTS.length - 1 && <View style={styles.rowDivider} />}
+              ))}
             </View>
-          ))}
-        </View>
+          </>
+        )}
 
         {/* Footer Logo */}
         <View style={styles.footer}>
@@ -102,11 +138,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#e8e8e8',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
+  },
+  bannerImage: {
+    ...StyleSheet.absoluteFillObject,
+    width:"100%",
+    height:160
   },
   bannerOverlay: {
     alignItems: 'center',
-    position: 'relative',
   },
   bannerSmall: {
     fontSize: 13,
@@ -125,6 +164,14 @@ const styles = StyleSheet.create({
     color: '#999999',
     textDecorationLine: 'line-through',
     marginTop: 4,
+  },
+  centered: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#888888',
   },
   headline: {
     fontSize: 15,

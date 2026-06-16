@@ -41,7 +41,7 @@ const formatDate = (dateStr: string) => {
   return `${mm}-${dd}-${yyyy} ${String(hour12).padStart(2, '0')}:${min} ${ampm}`;
 };
 
-export default function NewsDetailScreen() {
+export default function NotificationDetailScreen() {
   const params = useLocalSearchParams<{ data: string }>();
   const {
     darkMode,
@@ -65,7 +65,7 @@ export default function NewsDetailScreen() {
     return (
       <SafeAreaView style={styles.safe} edges={['bottom']}>
         <View style={styles.errorWrap}>
-          <Text style={styles.errorText}>Story not found.</Text>
+          <Text style={styles.errorText}>Notification not found.</Text>
         </View>
       </SafeAreaView>
     );
