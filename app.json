@@ -19,6 +19,11 @@
     },
     "android": {
       "package": "com.partner_auto_2592.timesalert",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBiQCMtUr_ALMpziM0ozThqighEPYt64OQ"
+        }
+      },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

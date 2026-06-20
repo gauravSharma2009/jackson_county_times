@@ -70,6 +70,12 @@ export default function RootLayout() {
           name="notifications/[id]"
           options={{ title: 'Notification',headerBackTitle:"Back", headerRight: () => null }}
         />
+        <Stack.Screen name="directory/index" options={{ title: 'Directory', headerBackTitle: 'Back', headerRight: () => null }} />
+        <Stack.Screen name="directory/[id]" options={({ route }: any) => {
+            let title = 'Business';
+            try { const d = JSON.parse((route.params as any)?.data ?? '{}'); if (d.name) title = d.name; } catch {}
+            return { title, headerBackTitle: 'Back', headerRight: () => null };
+          }} />
       </Stack>
     </ThemeProvider>
   );

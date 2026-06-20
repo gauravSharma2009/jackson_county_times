@@ -1,10 +1,13 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   Dimensions,
+  Easing,
   Image,
   ImageSourcePropType,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -29,9 +32,94 @@ type GridItem = {
   route: string | null;
 };
 
+type RibbonItem = {
+  id: string;
+  text: string;
+  website_url: string | null;
+};
+
+function TickerRibbon({ items }: { items: RibbonItem[] }) {
+  const SCREEN_WIDTH = Dimensions.get('window').width;
+  const translateX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
+  const [contentWidth, setContentWidth] = useState(0);
+  const animRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  useEffect(() => {
+    if (contentWidth === 0) return;
+    translateX.setValue(SCREEN_WIDTH);
+    animRef.current = Animated.loop(
+      Animated.timing(translateX, {
+        toValue: -contentWidth,
+        duration: (contentWidth + SCREEN_WIDTH) * 28,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    animRef.current.start();
+    return () => animRef.current?.stop();
+  }, [contentWidth]);
+
+  if (items.length === 0) return null;
+
+  return (
+    <View style={ribbonStyles.container}>
+      <View style={ribbonStyles.overflow}>
+        <Animated.View
+          style={{ flexDirection: 'row', transform: [{ translateX }] }}
+          onLayout={(e) => setContentWidth(e.nativeEvent.layout.width)}>
+          {items.map((item, idx) => (
+            <View key={item.id} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {idx > 0 && <View style={ribbonStyles.bullet} />}
+              <TouchableOpacity
+                onPress={() => item.website_url && Linking.openURL(item.website_url)}
+                activeOpacity={0.7}>
+                <Text style={ribbonStyles.text}>{item.text}</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+          {/* duplicate for seamless loop */}
+          {items.map((item, idx) => (
+            <View key={`dup-${item.id}`} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={ribbonStyles.bullet} />
+              <TouchableOpacity
+                onPress={() => item.website_url && Linking.openURL(item.website_url)}
+                activeOpacity={0.7}>
+                <Text style={ribbonStyles.text}>{item.text}</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </Animated.View>
+      </View>
+    </View>
+  );
+}
+
+const ribbonStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#111111',
+    paddingVertical: 10,
+  },
+  overflow: {
+    overflow: 'hidden',
+  },
+  text: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '500',
+    paddingHorizontal: 12,
+    letterSpacing: 0.2,
+  },
+  bullet: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#444444',
+  },
+});
+
 const GRID: GridItem[] = [
   { id: 'about', label: 'About Us', image: require('../../assets/images/about_us.png'), route: '/about' },
-  { id: 'directory', label: 'Directory', image: require('../../assets/images/directory.png'), route: null },
+  { id: 'directory', label: 'Directory', image: require('../../assets/images/directory.png'), route: '/directory' },
   { id: 'obituaries', label: 'Obituaries', image: require('../../assets/images/obitauries.png'), route: '/obituaries' },
   { id: 'contact', label: 'Contact Us', image: require('../../assets/images/contact_us.png'), route: '/contact' },
   { id: 'news', label: 'News', image: require('../../assets/images/news.png'), route: '/news' },
@@ -42,14 +130,18 @@ export default function HomeScreen() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [banners, setBanners] = useState<Banner[]>([]);
+  const [ribbons, setRibbons] = useState<RibbonItem[]>([]);
   const cardWidth = SCREEN_WIDTH - 32;
 
   useEffect(() => {
     fetch(`${BASE_URL}/banners/active`, { headers: { 'Cache-Control': 'no-cache' } })
       .then((res) => res.json())
-      .then((json) => {
-        if (json.success) setBanners(json.data);
-      })
+      .then((json) => { if (json.success) setBanners(json.data); })
+      .catch(() => {});
+
+    fetch(`${BASE_URL}/form-bottom-ribbon?page=1&limit=50`)
+      .then((res) => res.json())
+      .then((json) => { if (json.success) setRibbons(json.data.filter((r: any) => r.status === 1)); })
       .catch(() => {});
   }, []);
 
@@ -71,7 +163,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, ribbons.length > 0 && { paddingBottom: 48 }]}
         showsVerticalScrollIndicator={false}>
         {/* Logo */}
         <Image
@@ -141,6 +233,12 @@ export default function HomeScreen() {
           <Text style={styles.footerLarge}>TIMES</Text>
         </View> */}
       </ScrollView>
+
+      {ribbons.length > 0 && (
+        <View style={styles.ribbonWrap}>
+          <TickerRibbon items={ribbons} />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -228,6 +326,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333333',
     lineHeight: 14,
+  },
+  ribbonWrap: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   footer: {
     alignItems: 'center',
