@@ -96,13 +96,13 @@ export default function BusinessDetailScreen() {
       {/* Bottom actions */}
       <View style={styles.bottomBar}>
         <TouchableOpacity style={styles.actionBtn} onPress={handlePhone} disabled={!item.phone}>
-          <Feather name="phone-call" size={24} color={item.phone ? '#ffffff' : '#666666'} />
+          <Feather name="phone-call" size={24} color={item.phone ? '#333333' : '#bbbbbb'} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtn} onPress={handleMapOpen}>
-          <Feather name="map-pin" size={24} color="#ffffff" />
+          <Feather name="map-pin" size={24} color="#333333" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtn} onPress={handleWebsite} disabled={!item.website}>
-          <Feather name="globe" size={24} color={item.website ? '#ffffff' : '#666666'} />
+          <Feather name="globe" size={24} color={item.website ? '#333333' : '#bbbbbb'} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -110,7 +110,7 @@ export default function BusinessDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#f2f2f2' },
+  safe: { flex: 1, backgroundColor: '#f1f1f1' },
   content: { paddingBottom: 16 },
   bannerWrap: {
     height: 200,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     flexDirection: 'row',
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f1f1f1',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
   },
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f1f1f1',
   },
   errorWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { fontSize: 15, color: '#888888' },

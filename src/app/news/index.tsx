@@ -229,7 +229,7 @@ export default function NewsScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f1f1f1',
   },
   centered: {
     flex: 1,

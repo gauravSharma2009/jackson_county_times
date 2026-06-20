@@ -149,7 +149,7 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f1f1f1',
   },
   listContent: {
     paddingHorizontal: 12,

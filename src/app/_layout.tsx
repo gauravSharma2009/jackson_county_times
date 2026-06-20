@@ -9,9 +9,9 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
 
-  const HeaderMenu = () => (
-    <TouchableOpacity style={{ paddingHorizontal: 8 }} onPress={() => {}}>
-      <Feather name="more-vertical" size={22} color="#ffffff" />
+  const HeaderBackButton = () => (
+    <TouchableOpacity style={{ paddingHorizontal: 8 }} onPress={() => router.back()}>
+      <Feather name="arrow-left" size={22} color="#000000" />
     </TouchableOpacity>
   );
 
@@ -24,7 +24,7 @@ export default function RootLayout() {
             'Check out the Jackson County Times app! Get local news, obituaries, events and more.\nhttps://jacksoncountytimes.net/',
         }).catch(() => {});
       }}>
-      <Feather name="share-2" size={22} color="#ffffff" />
+      <Feather name="share-2" size={22} color="#000000" />
     </TouchableOpacity>
   );
 
@@ -32,50 +32,41 @@ export default function RootLayout() {
     <TouchableOpacity
       style={{ paddingHorizontal: 8 }}
       onPress={() => router.push('/notifications')}>
-      <Feather name="bell" size={22} color="#ffffff" />
+      <Feather name="bell" size={22} color="#000000" />
     </TouchableOpacity>
   );
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <AnimatedSplashOverlay />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: '#1a1a1a' },
-          headerTintColor: '#ffffff',
-          headerTitleStyle: { fontWeight: '600', fontSize: 18 },
-          headerTitleAlign: 'center',
-          headerBackTitle: '',
-          headerRight: () => <HeaderMenu />,
+          headerStyle: { backgroundColor: '#ffffff' },
+          headerTintColor: '#000000',
+          headerShadowVisible: true,
+          headerLeft: ({ canGoBack }) => (canGoBack ? <HeaderBackButton /> : null),
         }}>
         <Stack.Screen
           name="index"
           options={{
-            title: 'Jackson County Times',
+            title: '',
             headerLeft: () => <HeaderShare />,
             headerRight: () => <HeaderBell />,
           }}
         />
-        <Stack.Screen name="about" options={{ title: 'About Us', headerRight: () => null }} />
-        <Stack.Screen name="contact" options={{ title: 'Contact Us' , headerRight: () => null}} />
-        <Stack.Screen name="digital-edition" options={{ title: 'Digital Edition' , headerRight: () => null}} />
+        <Stack.Screen name="about" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="contact" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="digital-edition" options={{ title: '', headerRight: () => null }} />
         <Stack.Screen name="explore" options={{ headerShown: false }} />
-        <Stack.Screen name="news/index" options={{ title: 'News' ,headerBackTitle:"Back", headerRight: () => null}} />
-        <Stack.Screen name="news/[id]" options={{ title: 'News' ,headerBackTitle:"Back", headerRight: () => null}} />
-        <Stack.Screen name="obituaries/index" options={{ title: 'Obituaries' ,headerBackTitle:"Back", headerRight: () => null}} />
-        <Stack.Screen name="obituaries/[id]" options={{ title: 'Obituary' ,headerBackTitle:"Back", headerRight: () => null}} />
-        <Stack.Screen name="notifications/index" options={{ title: 'Notifications' ,headerBackTitle:"Back", headerRight: () => null}} />
-        <Stack.Screen
-          name="notifications/[id]"
-          options={{ title: 'Notification',headerBackTitle:"Back", headerRight: () => null }}
-        />
-        <Stack.Screen name="directory/index" options={{ title: 'Directory', headerBackTitle: 'Back', headerRight: () => null }} />
-        <Stack.Screen name="directory/[id]" options={({ route }: any) => {
-            let title = 'Business';
-            try { const d = JSON.parse((route.params as any)?.data ?? '{}'); if (d.name) title = d.name; } catch {}
-            return { title, headerBackTitle: 'Back', headerRight: () => null };
-          }} />
+        <Stack.Screen name="news/index" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="news/[id]" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="obituaries/index" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="obituaries/[id]" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="notifications/index" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="notifications/[id]" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="directory/index" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="directory/[id]" options={{ title: '', headerRight: () => null }} />
       </Stack>
     </ThemeProvider>
   );

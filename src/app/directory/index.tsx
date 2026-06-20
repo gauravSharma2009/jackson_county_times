@@ -234,7 +234,7 @@ export default function DirectoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#f2f2f2' },
+  safe: { flex: 1, backgroundColor: '#f1f1f1' },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',

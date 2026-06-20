@@ -112,7 +112,7 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f1f1f1',
   },
   scroll: {
     flex: 1,

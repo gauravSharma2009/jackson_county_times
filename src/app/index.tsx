@@ -97,14 +97,14 @@ function TickerRibbon({ items }: { items: RibbonItem[] }) {
 const ribbonStyles = StyleSheet.create({
   container: {
     backgroundColor: '#111111',
-    paddingVertical: 10,
+    paddingVertical: 16,
   },
   overflow: {
     overflow: 'hidden',
   },
   text: {
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '500',
     paddingHorizontal: 12,
     letterSpacing: 0.2,
@@ -157,7 +157,7 @@ export default function HomeScreen() {
   };
 
   const rows = [GRID.slice(0, 3), GRID.slice(3, 6)];
-  const itemSize = Math.floor((SCREEN_WIDTH - 32 - 16) / 3);
+  const itemSize = Math.floor((SCREEN_WIDTH - 32) / 3);
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
@@ -193,7 +193,7 @@ export default function HomeScreen() {
                 </View>
               ))
             ) : (
-              <View style={[styles.slide, { width: cardWidth, backgroundColor: '#f0f0f0' }]}>
+              <View style={[styles.slide, { width: cardWidth, backgroundColor: '#f1f1f1' }]}>
                 <Feather name="image" size={48} color="#cccccc" />
               </View>
             )}
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   sliderCard: {
     margin: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f1f1f1',
     borderRadius: 8,
     overflow: 'hidden',
     elevation: 3,
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     gap: 6,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f1f1f1',
   },
   dot: {
     width: 8,

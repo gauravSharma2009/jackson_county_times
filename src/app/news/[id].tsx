@@ -148,7 +148,7 @@ export default function NewsDetailScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f1f1f1',
   },
   safeDark: {
     backgroundColor: '#1a1a1a',
