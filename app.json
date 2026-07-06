@@ -2,7 +2,7 @@
   "expo": {
     "name": "jackson_county_times",
     "slug": "jackson_county_times",
-    "version": "1.2.1",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/app_icon.png",
     "scheme": "jacksoncountytimes",
@@ -20,7 +20,8 @@
       }
     },
     "android": {
-      "package": "com.partner_auto_2592.timesalert",
+      "package": "com.app.jacksoncountytimes",
+      "versionCode": 910,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyBiQCMtUr_ALMpziM0ozThqighEPYt64OQ"
@@ -39,6 +40,11 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "splash": {
+      "image": "./assets/images/splash-2.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
     "plugins": [
       "expo-router",
       [
@@ -46,10 +52,9 @@
         {
           "backgroundColor": "#ffffff",
           "image": "./assets/images/splash-2.png",
-          "resizeMode": "contain",
+          "resizeMode": "cover",
           "android": {
-            "image": "./assets/images/splash-2.png",
-            "imageWidth": 300
+            "image": "./assets/images/splash-2.png"
           }
         }
       ]
