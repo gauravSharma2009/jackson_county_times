@@ -53,7 +53,7 @@ function BusinessCard({ item, onPress }: { item: Business; onPress: () => void }
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
-      {/* Banner / Logo area */}
+      {/* Banner / Logo area with name overlay */}
       <View style={styles.cardTop}>
         {item.logo_image ? (
           <Image source={{ uri: BASE_URL + '/images' + item.logo_image }}
@@ -62,17 +62,16 @@ function BusinessCard({ item, onPress }: { item: Business; onPress: () => void }
         ) : (
           <View style={styles.bannerPlaceholder} />
         )}
-      </View>
-      {/* Footer */}
-      <View style={styles.cardFooter}>
-        <Text style={styles.cardName} numberOfLines={1}>{item.name}</Text>
-        <View style={styles.cardIcons}>
-          <TouchableOpacity onPress={handlePhone} style={styles.iconBtn}>
-            <Feather name="phone-call" size={22} color="#333333" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleMap} style={styles.iconBtn}>
-            <Feather name="map-pin" size={22} color="#333333" />
-          </TouchableOpacity>
+        <View style={styles.nameOverlay}>
+          <Text style={styles.cardName} numberOfLines={1}>{item.name}</Text>
+          <View style={styles.cardIcons}>
+            <TouchableOpacity onPress={handlePhone} style={styles.iconBtn}>
+              <Feather name="phone-call" size={22} color="#333333" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleMap} style={styles.iconBtn}>
+              <Feather name="map-pin" size={22} color="#333333" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -301,12 +300,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  cardFooter: {
+  nameOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(180,185,160,0.85)',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
   },
   cardName: {
     flex: 1,

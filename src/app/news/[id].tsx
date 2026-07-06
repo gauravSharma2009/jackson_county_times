@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useEffect } from 'react';
 import {
   Image,
   ScrollView,
@@ -42,7 +43,13 @@ const formatDate = (dateStr: string) => {
 };
 
 export default function NewsDetailScreen() {
-  const params = useLocalSearchParams<{ data: string }>();
+  const params = useLocalSearchParams<{ data: string; tab: string }>();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    if (params.tab) navigation.setOptions({ title: params.tab });
+  }, [params.tab]);
+
   const {
     darkMode,
     toggleDarkMode,

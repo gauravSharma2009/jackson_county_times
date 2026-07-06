@@ -151,7 +151,7 @@ export default function NewsScreen() {
     : data;
 
   const handlePress = (item: NewsItem) => {
-    router.push({ pathname: '/news/[id]', params: { id: item.id, data: JSON.stringify(item) } });
+    router.push({ pathname: '/news/[id]', params: { id: item.id, data: JSON.stringify(item), tab: activeCategory?.category_name ?? 'News' } });
   };
 
   if (catLoading) {

@@ -51,22 +51,23 @@ export default function RootLayout() {
           name="index"
           options={{
             title: '',
+            headerStyle: { backgroundColor: '#f1f1f1' },
             headerLeft: () => <HeaderShare />,
             headerRight: () => <HeaderBell />,
           }}
         />
-        <Stack.Screen name="about" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="contact" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="digital-edition" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="about" options={{ title: 'About Us', headerRight: () => null }} />
+        <Stack.Screen name="contact" options={{ title: 'Contact Us', headerRight: () => null }} />
+        <Stack.Screen name="digital-edition" options={{ title: 'Digital Edition', headerRight: () => null }} />
         <Stack.Screen name="explore" options={{ headerShown: false }} />
-        <Stack.Screen name="news/index" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="news/[id]" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="obituaries/index" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="obituaries/[id]" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="notifications/index" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="notifications/[id]" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="directory/index" options={{ title: '', headerRight: () => null }} />
-        <Stack.Screen name="directory/[id]" options={{ title: '', headerRight: () => null }} />
+        <Stack.Screen name="news/index" options={{ title: 'News', headerRight: () => null }} />
+        <Stack.Screen name="news/[id]" options={{ title: 'News', headerRight: () => null }} />
+        <Stack.Screen name="obituaries/index" options={{ title: 'Obituaries', headerRight: () => null }} />
+        <Stack.Screen name="obituaries/[id]" options={{ title: 'Obituaries', headerRight: () => null }} />
+        <Stack.Screen name="notifications/index" options={{ title: 'Notifications', headerRight: () => null }} />
+        <Stack.Screen name="notifications/[id]" options={{ title: 'Notifications', headerRight: () => null }} />
+        <Stack.Screen name="directory/index" options={{ title: 'Directory', headerRight: () => null }} />
+        <Stack.Screen name="directory/[id]" options={{ title: 'Directory', headerRight: () => null }} />
       </Stack>
     </ThemeProvider>
   );

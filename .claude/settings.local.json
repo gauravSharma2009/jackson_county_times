@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npx expo *)",
-      "Bash(rm -rf /var/folders/85/m95dv1cj0kg7k350yf29mhqc0000gp/T/metro-file-map-expo-0e6ea4444c3544e3355d203e2aafa248-40961eac2581de3e93f4cf77b0712314 \\\\ *)"
+      "Bash(rm -rf /var/folders/85/m95dv1cj0kg7k350yf29mhqc0000gp/T/metro-file-map-expo-0e6ea4444c3544e3355d203e2aafa248-40961eac2581de3e93f4cf77b0712314 \\\\ *)",
+      "Bash(sips -g all /Volumes/GauravExternal/Users/gaurav/Desktop/projects/jackson_county_times/assets/images/app_icon.png)",
+      "Bash(sips -s format png -s formatOptions best --matchTo '/System/Library/ColorSync/Profiles/sRGB Profile.icc' /Volumes/GauravExternal/Users/gaurav/Desktop/projects/jackson_county_times/assets/images/app_icon.png --out /Volumes/GauravExternal/Users/gaurav/Desktop/projects/jackson_county_times/assets/images/app_icon.png)"
     ]
   }
 }

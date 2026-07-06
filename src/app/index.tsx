@@ -97,14 +97,14 @@ function TickerRibbon({ items }: { items: RibbonItem[] }) {
 const ribbonStyles = StyleSheet.create({
   container: {
     backgroundColor: '#111111',
-    paddingVertical: 16,
+    paddingVertical: 32,
   },
   overflow: {
     overflow: 'hidden',
   },
   text: {
     color: '#ffffff',
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '500',
     paddingHorizontal: 12,
     letterSpacing: 0.2,
