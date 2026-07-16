@@ -2,7 +2,7 @@
   "expo": {
     "name": "jackson_county_times",
     "slug": "jackson_county_times",
-    "version": "1.0.1",
+    "version": "1.2.2",
     "orientation": "portrait",
     "icon": "./assets/images/app_icon.png",
     "scheme": "jacksoncountytimes",
@@ -10,7 +10,7 @@
     "ios": {
       "icon": "./assets/images/app_icon.png",
       "bundleIdentifier": "com.partner-auto-2592.timesalert",
-      "buildNumber": "6",
+      "buildNumber": "8",
       "supportsTablet": true,
       "infoPlist": {
         "NSAppTransportSecurity": {
@@ -21,7 +21,8 @@
     },
     "android": {
       "package": "com.app.jacksoncountytimes",
-      "versionCode": 910,
+      "versionCode": 911,
+      "version": "1.0.2",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyBiQCMtUr_ALMpziM0ozThqighEPYt64OQ"
