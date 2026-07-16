@@ -61,7 +61,7 @@ export default function BusinessDetailScreen() {
         {/* Banner + Logo */}
         <View style={styles.bannerWrap}>
           {item.logo_image ? (
-            <Image source={{ uri: BASE_URL + '/images' + item.logo_image }} style={styles.bannerImage} resizeMode="cover" blurRadius={3} />
+            <Image source={{ uri: BASE_URL + '/images' + item.logo_image }} style={styles.bannerImage} resizeMode="cover" />
           ) : (
             <View style={styles.bannerPlaceholder} />
           )}

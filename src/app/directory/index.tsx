@@ -58,7 +58,7 @@ function BusinessCard({ item, onPress }: { item: Business; onPress: () => void }
         {item.logo_image ? (
           <Image source={{ uri: BASE_URL + '/images' + item.logo_image }}
             style={styles.bannerImage}
-            resizeMode="cover" blurRadius={3} />
+            resizeMode="cover" />
         ) : (
           <View style={styles.bannerPlaceholder} />
         )}

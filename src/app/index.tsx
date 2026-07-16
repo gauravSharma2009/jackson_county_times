@@ -41,53 +41,55 @@ type RibbonItem = {
 function TickerRibbon({ items }: { items: RibbonItem[] }) {
   const SCREEN_WIDTH = Dimensions.get('window').width;
   const translateX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
-  const [contentWidth, setContentWidth] = useState(0);
+  const [singleWidth, setSingleWidth] = useState(0);
   const animRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
-    if (contentWidth === 0) return;
-    translateX.setValue(SCREEN_WIDTH);
-    animRef.current = Animated.loop(
-      Animated.timing(translateX, {
-        toValue: -contentWidth,
-        duration: (contentWidth + SCREEN_WIDTH) * 28,
+    if (singleWidth === 0) return;
+
+    const animate = (initial: boolean) => {
+      translateX.setValue(initial ? SCREEN_WIDTH : 0);
+      animRef.current = Animated.timing(translateX, {
+        toValue: -singleWidth,
+        duration: (initial ? singleWidth + SCREEN_WIDTH : singleWidth) * 28,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
-    );
-    animRef.current.start();
+      });
+      animRef.current.start(({ finished }) => {
+        if (finished) animate(false);
+      });
+    };
+
+    animate(true);
     return () => animRef.current?.stop();
-  }, [contentWidth]);
+  }, [singleWidth]);
 
   if (items.length === 0) return null;
+
+  const renderItems = (keyPrefix: string) =>
+    items.map((item, idx) => (
+      <View key={`${keyPrefix}-${item.id}`} style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {idx > 0 && <View style={ribbonStyles.bullet} />}
+        <TouchableOpacity
+          onPress={() => item.website_url && Linking.openURL(item.website_url)}
+          activeOpacity={0.7}>
+          <Text style={ribbonStyles.text}>{item.text}</Text>
+        </TouchableOpacity>
+      </View>
+    ));
 
   return (
     <View style={ribbonStyles.container}>
       <View style={ribbonStyles.overflow}>
-        <Animated.View
-          style={{ flexDirection: 'row', transform: [{ translateX }] }}
-          onLayout={(e) => setContentWidth(e.nativeEvent.layout.width)}>
-          {items.map((item, idx) => (
-            <View key={item.id} style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {idx > 0 && <View style={ribbonStyles.bullet} />}
-              <TouchableOpacity
-                onPress={() => item.website_url && Linking.openURL(item.website_url)}
-                activeOpacity={0.7}>
-                <Text style={ribbonStyles.text}>{item.text}</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+        <Animated.View style={{ flexDirection: 'row', transform: [{ translateX }] }}>
+          {/* measure only the single set */}
+          <View style={{ flexDirection: 'row' }} onLayout={(e) => setSingleWidth(e.nativeEvent.layout.width)}>
+            {renderItems('a')}
+          </View>
           {/* duplicate for seamless loop */}
-          {items.map((item, idx) => (
-            <View key={`dup-${item.id}`} style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={ribbonStyles.bullet} />
-              <TouchableOpacity
-                onPress={() => item.website_url && Linking.openURL(item.website_url)}
-                activeOpacity={0.7}>
-                <Text style={ribbonStyles.text}>{item.text}</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+          <View style={{ flexDirection: 'row' }}>
+            {renderItems('b')}
+          </View>
         </Animated.View>
       </View>
     </View>
@@ -132,6 +134,8 @@ export default function HomeScreen() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [ribbons, setRibbons] = useState<RibbonItem[]>([]);
   const cardWidth = SCREEN_WIDTH - 32;
+  const sliderRef = useRef<ScrollView>(null);
+  const currentSlideRef = useRef(0);
 
   useEffect(() => {
     fetch(`${BASE_URL}/banners/active`, { headers: { 'Cache-Control': 'no-cache' } })
@@ -145,9 +149,22 @@ export default function HomeScreen() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const timer = setInterval(() => {
+      const next = (currentSlideRef.current + 1) % banners.length;
+      sliderRef.current?.scrollTo({ x: next * cardWidth, animated: true });
+      currentSlideRef.current = next;
+      setCurrentSlide(next);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [banners.length, cardWidth]);
+
   const handleScroll = (event: any) => {
     const idx = Math.round(event.nativeEvent.contentOffset.x / cardWidth);
-    setCurrentSlide(Math.max(0, Math.min(idx, banners.length - 1)));
+    const clamped = Math.max(0, Math.min(idx, banners.length - 1));
+    currentSlideRef.current = clamped;
+    setCurrentSlide(clamped);
   };
 
   const handlePress = (item: GridItem) => {
@@ -175,6 +192,7 @@ export default function HomeScreen() {
         {/* Ad Banner Slider */}
         <View style={styles.sliderCard}>
           <ScrollView
+            ref={sliderRef}
             horizontal
             snapToInterval={cardWidth}
             decelerationRate="fast"
@@ -261,17 +279,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   sliderCard: {
-    margin: 16,
-    backgroundColor: '#f1f1f1',
-    borderRadius: 8,
+    marginHorizontal: 16,
+    marginVertical: 12,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e8e8e8',
   },
   slide: {
     height: 180,
@@ -286,9 +296,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 8,
     gap: 6,
-    backgroundColor: '#f1f1f1',
   },
   dot: {
     width: 8,
